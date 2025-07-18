@@ -10,6 +10,9 @@ import java.util.List;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +30,7 @@ public class ServerApp extends JFrame {
 
     
     private JPanel anaEkran;
+    private JPanel masaButonPaneli;
 
     public ServerApp() {
         db = new DatabaseManager();
@@ -43,16 +47,12 @@ public class ServerApp extends JFrame {
         anaEkran = new JPanel(new BorderLayout());
 
         // Masa butonları paneli
-        JPanel masaButonPaneli = new JPanel(new GridLayout(2, 5, 10, 10));
+        masaButonPaneli = new JPanel(new GridLayout(2, 5, 10, 10));
 
         // Masaları veritabanından yükle ve butonları ekle
-        for (int i = 1; i <= 10; i++) {
-            int masaNo = i;
-            Masa masa = db.masaSiparisGetir(masaNo);
-            if (masa == null) {
-                masa = new Masa(masaNo); // veritabanında yoksa yeni oluştur
-                db.masaEkle(masa);       // veritabanına ekle
-            }
+        List<Masa> mevcutMasalar = db.masalariGetir();
+        for (Masa masa : mevcutMasalar) {
+            int masaNo = masa.getMasaNo();
             masalar.put(masaNo, masa);
 
             JButton masaButon = new JButton("Masa " + masaNo);
@@ -69,18 +69,17 @@ public class ServerApp extends JFrame {
         JButton urunEkleButton = new JButton("Ürün Ekle");
         JButton urunSilButton = new JButton("Ürün Sil");
 
-
         // Butonlara tıklama olayları
-        urunEkleButton.addActionListener(e -> urunEkle());
-        urunGuncelleButton.addActionListener(e -> urunGuncelle());
-        urunSilButton.addActionListener(e -> urunSil());
         masaEkleButton.addActionListener(e -> masaEkle());
+        urunGuncelleButton.addActionListener(e -> urunGuncelle());
         masaTasiButton.addActionListener(e -> masaTasi());
         masaSilButton.addActionListener(e -> masaSil());
+        urunEkleButton.addActionListener(e -> urunEkle());
+        urunSilButton.addActionListener(e -> urunSil());
         
         butonPaneli.add(urunEkleButton);
-        butonPaneli.add(urunGuncelleButton);
         butonPaneli.add(urunSilButton);
+        butonPaneli.add(urunGuncelleButton);
         butonPaneli.add(masaEkleButton);
         butonPaneli.add(masaSilButton);
         butonPaneli.add(masaTasiButton);
@@ -98,35 +97,6 @@ public class ServerApp extends JFrame {
         add(mainPanel);
 
         cardLayout.show(mainPanel, "ANA");
-    }
-
-    private void masaEkle() {
-        String input = JOptionPane.showInputDialog(this, "Yeni masa numarası girin:");
-        if (input != null) {
-            try {
-                int yeniMasaNo = Integer.parseInt(input);
-                if (masalar.containsKey(yeniMasaNo)) {
-                    JOptionPane.showMessageDialog(this, "Bu masa zaten mevcut.");
-                    return;
-                }
-
-                Masa yeniMasa = new Masa(yeniMasaNo);
-                masalar.put(yeniMasaNo, yeniMasa);
-                db.masaEkle(yeniMasa);  // Veritabanına kaydet
-
-                // Yeni masa butonunu ana ekrana ekle
-                JButton yeniMasaButon = new JButton("Masa " + yeniMasaNo);
-                yeniMasaButon.addActionListener(e -> masaButonTiklandi(yeniMasaNo));
-
-                JPanel masaButonPaneli = (JPanel) ((BorderLayout) anaEkran.getLayout()).getLayoutComponent(BorderLayout.CENTER);
-                masaButonPaneli.add(yeniMasaButon);
-                masaButonPaneli.revalidate();
-                masaButonPaneli.repaint();
-
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Lütfen geçerli bir sayı girin.");
-            }
-        }
     }
 
     private void urunEkle() {
@@ -223,6 +193,33 @@ public class ServerApp extends JFrame {
         }
     }
     
+    private void masaEkle() {
+        String input = JOptionPane.showInputDialog(this, "Yeni masa numarası girin:");
+        if (input != null) {
+            try {
+                int yeniMasaNo = Integer.parseInt(input);
+
+                if (masalar.containsKey(yeniMasaNo)) {
+                    JOptionPane.showMessageDialog(this, "Bu masa zaten mevcut.");
+                    return;
+                }
+
+                Masa yeniMasa = new Masa(yeniMasaNo);
+                masalar.put(yeniMasaNo, yeniMasa);
+                db.masaEkle(yeniMasa);
+
+                // Masa butonunu GUI'de masaButonPaneli'ne ekle
+                JButton masaButonu = new JButton("Masa " + yeniMasaNo);
+                masaButonu.addActionListener(e -> masaButonTiklandi(yeniMasaNo));
+                masaButonPaneli.add(masaButonu);
+                masaButonPaneli.revalidate();
+                masaButonPaneli.repaint();
+
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Lütfen geçerli bir sayı girin.");
+            }
+        }
+    }
 
     private void masaTasi() {
         Integer[] masaNumaralari = masalar.keySet().toArray(new Integer[0]);
@@ -252,12 +249,21 @@ public class ServerApp extends JFrame {
         }
     }
 
+
     private void masaSil() {
-        String input = JOptionPane.showInputDialog(this, "Silmek istediğiniz masa numarasını girin:");
-        if (input == null) return;
+        JComboBox<Masa> masaComboBox = new JComboBox<>(masalar.values().toArray(new Masa[0]));
+
+        JPanel panel = new JPanel(new GridLayout(2, 1));
+        panel.add(new JLabel("Silmek istediğiniz ürünü seçin:"));
+        panel.add(masaComboBox);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Ürün Sil", JOptionPane.OK_CANCEL_OPTION);
+        Masa secilenMasa = (Masa) masaComboBox.getSelectedItem();
+        
+        if (secilenMasa == null) return;
 
         try {
-            int masaNo = Integer.parseInt(input);
+            int masaNo = secilenMasa.getMasaNo();
             if (!masalar.containsKey(masaNo)) {
                 JOptionPane.showMessageDialog(this, "Bu masa mevcut değil.");
                 return;
@@ -298,9 +304,16 @@ public class ServerApp extends JFrame {
     }
     }
 
+    //Bir masaya tıklandıktan sonraki işlev
+    private void masaButonTiklandi(int masaNo) {    
+        Masa masa = db.masaSiparisGetir(masaNo);
+        
+        if (masa == null) {
+            JOptionPane.showMessageDialog(this, "Masa bulunamadı.");
+            return;
+        }
 
-    private void masaButonTiklandi(int masaNo) {
-        Masa masa = masalar.get(masaNo);
+        masalar.put(masaNo, masa);
         MasaPanel panel = new MasaPanel(masa, db, this);
         masaPanelleri.put(masaNo, panel);
 
@@ -311,6 +324,7 @@ public class ServerApp extends JFrame {
 
         cardLayout.show(mainPanel, "MASA");
     }
+
 
     public void anasayfayaDon() {
         // Masaları veritabanından yeniden yükle
