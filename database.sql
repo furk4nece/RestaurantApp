@@ -14,3 +14,8 @@ CREATE TABLE IF NOT EXISTS siparisler (
   PRIMARY KEY (masa_no, urun_id),
   FOREIGN KEY (urun_id) REFERENCES urunler(id)
 );
+
+CREATE TABLE IF NOT EXISTS masalar (
+    masa_no INT PRIMARY KEY
+);
+
