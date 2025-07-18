@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class DatabaseManager {
 
-    private static final String DB_URL = ""; // SQL URL'nizi bu kısma yazın.
+    private static final String DB_URL = ""; // Database URL'nizi bu kısma yazın.
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = ""; // Database şifrenizi (varsa) bu kısma yazın.
 
