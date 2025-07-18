@@ -208,7 +208,7 @@ public class ServerApp extends JFrame {
                 masalar.put(yeniMasaNo, yeniMasa);
                 db.masaEkle(yeniMasa);
 
-                // Masa butonunu GUI'de masaButonPaneli'ne ekle
+                //Eklenen masa için ana ekranda masa butonu ekleme
                 JButton masaButonu = new JButton("Masa " + yeniMasaNo);
                 masaButonu.addActionListener(e -> masaButonTiklandi(yeniMasaNo));
                 masaButonPaneli.add(masaButonu);
