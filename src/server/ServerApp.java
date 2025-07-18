@@ -71,16 +71,16 @@ public class ServerApp extends JFrame {
 
 
         // Butonlara tıklama olayları
+        urunEkleButton.addActionListener(e -> urunEkle());
+        urunGuncelleButton.addActionListener(e -> urunGuncelle());
+        urunSilButton.addActionListener(e -> urunSil());
         masaEkleButton.addActionListener(e -> masaEkle());
-        //urunGuncelleButton.addActionListener(e -> urunGuncelle());
         masaTasiButton.addActionListener(e -> masaTasi());
         masaSilButton.addActionListener(e -> masaSil());
-        urunEkleButton.addActionListener(e -> urunEkle());
-        urunSilButton.addActionListener(e -> urunSil());
         
         butonPaneli.add(urunEkleButton);
-        butonPaneli.add(urunSilButton);
         butonPaneli.add(urunGuncelleButton);
+        butonPaneli.add(urunSilButton);
         butonPaneli.add(masaEkleButton);
         butonPaneli.add(masaSilButton);
         butonPaneli.add(masaTasiButton);
@@ -152,6 +152,43 @@ public class ServerApp extends JFrame {
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Fiyat sayı formatında olmalı.");
+            }
+        }
+    }
+
+    public void urunGuncelle(){
+        JTextField fiyatField = new JTextField();
+        List<Urun> urunler = db.urunleriGetir();
+        if (urunler.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Güncellenecek ürün bulunamadı.");
+            return;
+        }
+
+        JComboBox<Urun> urunComboBox = new JComboBox<>(urunler.toArray(new Urun[0]));
+
+        JPanel panel = new JPanel(new GridLayout(2, 1));
+        panel.add(new JLabel("Güncellemek istediğiniz ürünü seçin:"));
+        panel.add(urunComboBox);
+        panel.add(new JLabel("Fiyatı:"));
+        panel.add(fiyatField);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Ürün Güncelle", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            Urun secilenUrun = (Urun) urunComboBox.getSelectedItem();
+        try {
+                double yeniFiyat = Double.parseDouble(fiyatField.getText());
+
+                int onay = JOptionPane.showConfirmDialog(this,
+                    secilenUrun.getAd() + " ürünü " + yeniFiyat + " TL olarak güncellensin mi?",
+                    "Onay", JOptionPane.YES_NO_OPTION);
+
+                    if (onay == JOptionPane.YES_OPTION) {
+                        db.urunGuncelle(secilenUrun.getId(), yeniFiyat);
+                        JOptionPane.showMessageDialog(this, "Ürün güncellendi: " + secilenUrun.getAd());
+                    }
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "Geçerli bir fiyat girin.", "Hata", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
