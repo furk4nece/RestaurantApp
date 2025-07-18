@@ -1,0 +1,16 @@
+CREATE DATABASE IF NOT EXISTS testdb;
+USE testdb;
+
+CREATE TABLE IF NOT EXISTS urunler (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  ad VARCHAR(100) NOT NULL,
+  fiyat DOUBLE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS siparisler (
+  masa_no INT NOT NULL,
+  urun_id INT NOT NULL,
+  adet INT NOT NULL,
+  PRIMARY KEY (masa_no, urun_id),
+  FOREIGN KEY (urun_id) REFERENCES urunler(id)
+);
