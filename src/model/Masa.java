@@ -29,4 +29,10 @@ public class Masa {
     public double toplamTutar() {
         return siparisler.stream().mapToDouble(Siparis::getFiyat).sum();
     }
+
+    @Override
+    public String toString() {
+        return "Masa " + masaNo;
+    }
+    
 }
