@@ -14,9 +14,9 @@ import javax.swing.JOptionPane;
 
 public class DatabaseManager {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=UTC";
+    private static final String DB_URL = "" //Database URL'niz. ;
     private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "Tllwq123!"; // DATABASE ŞİFRENİZ NEYSE BU KISMA YAZIN !!!
+    private static final String DB_PASSWORD = ""; // Database şifrenizi(varsa) yazın.
 
     private Connection connection;
 
