@@ -218,13 +218,12 @@ public class DatabaseManager {
         }
     }
 
-    //Ürün Güncelleme fonksiyonu(şuanlık pasif)
-    public void urunGuncelle(Urun urun) {
-        String sql = "UPDATE urunler SET ad = ?, fiyat = ? WHERE id = ?";
+    //Ürün Güncelleme fonksiyonu
+   public void urunGuncelle(int urunId, double yeniFiyat) {
+        String sql = "UPDATE urunler SET fiyat = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, urun.getAd());
-            ps.setDouble(2, urun.getFiyat());
-            ps.setInt(3, urun.getId());
+            ps.setDouble(1, yeniFiyat);
+            ps.setInt(2, urunId);
             int affectedRows = ps.executeUpdate();
             if (affectedRows == 0) {
                 System.out.println("Güncellenecek ürün bulunamadı.");
