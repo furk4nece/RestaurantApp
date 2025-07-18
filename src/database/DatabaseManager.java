@@ -10,11 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JOptionPane;
+
 public class DatabaseManager {
 
-    private static final String DB_URL = ""; // Database URL'nizi bu kısma yazın.
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=UTC";
     private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = ""; // Database şifrenizi (varsa) bu kısma yazın.
+    private static final String DB_PASSWORD = "Tllwq123!"; // DATABASE ŞİFRENİZ NEYSE BU KISMA YAZIN !!!
 
     private Connection connection;
 
@@ -44,6 +46,23 @@ public class DatabaseManager {
         }
         return urunler;
     }
+
+    //Masaları Getir
+    public List<Masa> masalariGetir() {
+        List<Masa> masalarListesi = new ArrayList<>();
+        String sql = "SELECT masa_no FROM masalar";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int masaNo = rs.getInt("masa_no");
+                masalarListesi.add(new Masa(masaNo));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return masalarListesi;
+    }
+
 
     // Masaya ait siparişleri getir
     public Masa masaSiparisGetir(int masaNo) {
@@ -138,10 +157,15 @@ public class DatabaseManager {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, masa.getMasaNo());
             ps.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            JOptionPane.showMessageDialog(null, "Bu masa zaten veritabanında mevcut.", 
+            "Hata", JOptionPane.ERROR_MESSAGE);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+
     
     //Masada bulunan ürünleri başka masaya taşı
     public void masaTasi(int kaynakMasaNo, int hedefMasaNo) {
@@ -219,7 +243,7 @@ public class DatabaseManager {
     }
 
     //Ürün Güncelleme fonksiyonu
-   public void urunGuncelle(int urunId, double yeniFiyat) {
+    public void urunGuncelle(int urunId, double yeniFiyat) {
         String sql = "UPDATE urunler SET fiyat = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setDouble(1, yeniFiyat);
